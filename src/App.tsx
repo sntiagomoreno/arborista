@@ -187,7 +187,14 @@ function App() {
                     {fileDetails[file.key].branches &&
                       fileDetails[file.key].branches.map((branch: any) => (
                         <li key={branch.id}>
-                          {branch.name} - {branch.last_modified}
+                          {branch.name} -{" "}
+                          {new Date(branch.last_modified).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )}
                         </li>
                       ))}
                   </ul>

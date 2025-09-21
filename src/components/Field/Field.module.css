@@ -1,0 +1,52 @@
+.FieldContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.Label {
+  position: absolute;
+  top: 1.9375rem;
+  transform: translate3d(0, -55%, 0);
+  left: 1rem;
+  color: #9d9d9d;
+  transition: transform 120ms ease-out;
+  will-change: transform;
+  transform-origin: top left;
+}
+
+.LabelFocused {
+  transform: translate3d(0, -100%, 0) scale(0.75);
+}
+
+.Input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  height: 3.75rem;
+  border: 1px solid #4c4c4c;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 120ms ease-out;
+  background-color: #2d2d2d;
+  /* display: flex; */
+}
+
+.Input:focus {
+  /* border: 1px solid #ecf6af; */
+  padding: 2rem 1rem 0.875rem;
+  outline: 2px solid #9d9d9d;
+  outline-offset: 2px;
+  /* align-items: flex-end; */
+}
+
+.Input.InputFilled {
+  padding: 2rem 1rem 0.875rem;
+}
+
+.Description {
+  font-size: 0.75rem;
+  color: #9d9d9d;
+  width: 100%;
+  text-align: left;
+}

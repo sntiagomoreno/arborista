@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { Field } from "./components/Field";
+import { Field } from "./components/Field/Field";
 import { store } from "./store";
+import DashboardView from "./views/DashboardView";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useView } from "./context/ViewContext";
+import SettingsView from "./views/SettingsView";
+import { useStoredData } from "./context/StoredDataContext";
+import LoginView from "./views/LoginView";
 
 interface ProjectFile {
   key: string;
@@ -11,6 +17,8 @@ interface ProjectFile {
 const FIGMA_API_URL = "https://api.figma.com/v1";
 
 function App() {
+  const { currentView } = useView();
+
   const [accessToken, setAccessToken] = useState("");
   const [projectId, setProjectId] = useState("");
   const [tokenSaved, setTokenSaved] = useState(false);
@@ -43,8 +51,10 @@ function App() {
   async function handleClearToken() {
     try {
       await store.delete("figma-access-token");
+      await store.delete("project-ids");
       await store.save();
       setAccessToken("");
+      setProjectId("");
       setTokenSaved(false);
       console.log("Token cleared from store");
     } catch (error) {
@@ -135,11 +145,18 @@ function App() {
     }
   }
 
+  const { storedAccessToken, storedProjectIds } = useStoredData();
+
   return (
     <main className="root">
-      <h1>Arborista</h1>
+      {storedAccessToken && storedProjectIds.length > 0 ? (
+        <DashboardView />
+      ) : (
+        <LoginView />
+      )}
+      {currentView === "settings" && <SettingsView />}
       {/* Token Form */}
-      <div>
+      {/* <div>
         <button onClick={handleClearToken}>Clear token</button>
         {tokenSaved ? <p>Token: {accessToken}</p> : <p>No token saved</p>}
         <div>
@@ -167,9 +184,9 @@ function App() {
           >
             Save
           </button>
-        </div>
-        {/* Project */}
-        <div>
+        </div> */}
+      {/* Project */}
+      {/* <div>
           <h2>{projectName}</h2>
           <ul>
             {projectFiles.map((file) => (
@@ -202,8 +219,8 @@ function App() {
               </li>
             ))}
           </ul>
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
     </main>
   );
 }

@@ -14,10 +14,10 @@
     "windows": [
       {
         "title": "Arborista",
+        "hiddenTitle": true,
         "width": 360,
-        "height": 600,
-        "resizable": false,
-        "transparent": true
+        "height": 620,
+        "resizable": false
       }
     ],
     "withGlobalTauri": true,

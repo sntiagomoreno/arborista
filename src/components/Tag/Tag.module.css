@@ -1,0 +1,22 @@
+.Tag {
+  font-size: 0.75rem;
+  color: #c8c8c8;
+  padding: 0.375rem 0.625rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  background-color: #2d2d2d;
+  border-radius: 100px;
+  font-weight: 500;
+}
+
+.Tag.alert {
+  color: #dddb77;
+  background-color: #3d3c1c;
+}
+
+.Tag.negative {
+  color: #e4b1b1;
+  background-color: #402020;
+}

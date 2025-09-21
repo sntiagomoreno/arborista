@@ -4,18 +4,29 @@
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 :root {
   color: #f6f6f6;
-  background-color: #2f2f2f;
+  /* background-color: #1e1e1e; */
+  background-color: rgba(30, 30, 30, 1);
+  overflow-x: hidden;
+}
+
+.root {
+  isolation: isolate;
+  overflow-x: hidden;
 }
 
 html,
 body {
   /* overflow: hidden; */
   border-radius: 8px;
-  font-family: sans-serif;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 a:hover {
@@ -33,4 +44,16 @@ button:active {
 
 button {
   cursor: pointer;
+  outline: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  background: transparent;
+}
+
+.main-content {
+  padding: 4.5rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }

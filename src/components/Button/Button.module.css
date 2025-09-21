@@ -1,0 +1,55 @@
+.Button {
+  padding: 0.75rem 1rem;
+  background-color: #ecf6af;
+  color: #1e1e1e;
+  border-radius: 8px;
+  transition: background-color 150ms ease-out;
+  font-weight: 500;
+  font-size: 1rem;
+  width: fit-content;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.Button.AlignStart {
+  align-self: flex-start;
+}
+
+.Button.AlignEnd {
+  align-self: flex-end;
+}
+
+.Button.AlignCenter {
+  align-self: center;
+}
+
+.Button.FullWidth {
+  width: 100%;
+}
+
+.Button:active {
+  background-color: hsl(68, 80%, 95%);
+}
+
+.Button:focus {
+  outline: 2px solid #9d9d9d;
+  outline-offset: 2px;
+}
+
+.Button.Small {
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+}
+
+.Button.Secondary {
+  background-color: #323232;
+  color: #ecf6af;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.Button.Secondary.Destructive {
+  color: #ff7070;
+}
+
+.Button.Secondary:hover {
+  background-color: #3d3d3d;
+}

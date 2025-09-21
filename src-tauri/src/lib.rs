@@ -5,6 +5,8 @@ use tauri::{
 
 use tauri::ActivationPolicy;
 
+use tauri::{TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
+
 use tauri::menu::{Menu, MenuItem};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -16,6 +18,8 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
@@ -25,9 +29,43 @@ pub fn run() {
             // #[cfg(target_os = "macos")]
             // app.set_activation_policy(ActivationPolicy::Accessory);
 
+            // UNCOMMENT FOR CUSTOM TITLE BAR
+            // let win_builder = {
+            //     let builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+            //         .inner_size(400.0, 680.0)
+            //         .resizable(false)
+            //         .maximizable(false)
+            //         .hidden_title(true);
+            //     #[cfg(target_os = "macos")]
+            //     let builder = builder.title_bar_style(TitleBarStyle::Transparent);
+            //     builder
+            // };
+
             // Get a handle to the main window
             let main_window = app.get_webview_window("main").unwrap();
             let icon = app.default_window_icon().unwrap();
+
+            // let main_window = win_builder.build().unwrap();
+
+            // set background color only when building for macOS
+            // #[cfg(target_os = "macos")]
+            // {
+            //     use cocoa::appkit::{NSColor, NSWindow};
+            //     use cocoa::base::{id, nil};
+
+            //     let ns_window = main_window.ns_window().unwrap() as id;
+            //     unsafe {
+            //         let bg_color = NSColor::colorWithRed_green_blue_alpha_(
+            //             nil,
+            //             30.0 / 255.0,
+            //             30.0 / 255.0,
+            //             30.0 / 255.0,
+            //             1.0,
+            //         );
+            //         ns_window.setBackgroundColor_(bg_color);
+
+            //     }
+            // }
 
             let monitor = main_window.current_monitor().unwrap().unwrap();
             let scale_factor = monitor.scale_factor();

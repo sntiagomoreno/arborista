@@ -1,0 +1,16 @@
+.Callout {
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.Callout.success {
+  background-color: #1a2919;
+  border: 1px solid #243822;
+  color: #a4fca0;
+}
+
+.Callout.error {
+  background-color: #402020;
+  border: 1px solid #661d1d;
+  color: #e4b1b1;
+}

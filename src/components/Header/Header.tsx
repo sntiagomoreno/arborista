@@ -18,32 +18,49 @@ import { useState } from "react";
 import { Button } from "../Button";
 import { useView } from "@/context/ViewContext";
 import SettingsView from "@/views/SettingsView";
+import { useStoredData } from "@/context/StoredDataContext";
+import { fetchProject } from "@/utils/fetchProject";
+import { Callout } from "../Callout";
 
 interface HeaderProps {
-  name: string;
-  options?: { value: string; label: string }[];
+  selectedProjectId: string;
+  onProjectChange: (id: string) => void;
   loading?: boolean;
   currentUserData?: UseQueryResult<GetMeResponse, Error>;
 }
 
 export function Header({
-  name,
-  options,
+  selectedProjectId,
+  onProjectChange,
   loading,
   currentUserData,
 }: HeaderProps) {
   const { setView } = useView();
+  const { storedAccessToken, saveProject, storedProjects } = useStoredData();
+  const selectedProjectName = storedProjects
+    .map((p) => JSON.parse(p) as { id: string; name: string })
+    .find((p) => p.id === selectedProjectId)?.name ?? "";
 
   const [newProjectId, setNewProjectId] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [addProjectError, setAddProjectError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
 
-  function handleAddProject() {
-    console.log("Add project:", newProjectId);
-    // Add your logic to handle adding the project here
-    setIsDialogOpen(false);
-    setNewProjectId("");
+  async function handleAddProject() {
+    setAddProjectError(null);
+    setIsAdding(true);
+    try {
+      const projectResponse = await fetchProject(storedAccessToken, newProjectId);
+      await saveProject(newProjectId, projectResponse.name);
+      setIsDialogOpen(false);
+      setNewProjectId("");
+    } catch {
+      setAddProjectError("Folder doesn't exist with that ID or you don't have permission to view.");
+    } finally {
+      setIsAdding(false);
+    }
   }
 
   return (
@@ -52,9 +69,9 @@ export function Header({
         <Select.Root
           open={isSelectOpen}
           onOpenChange={(open) => !open && setIsSelectOpen(!isSelectOpen)}
-          value={name}
+          value={selectedProjectId}
           disabled={loading}
-          onValueChange={() => {}}
+          onValueChange={onProjectChange}
         >
           <Select.Trigger
             className={clsx(styles.SelectTrigger)}
@@ -64,7 +81,7 @@ export function Header({
               <Skeleton width={120} height={24} radius={4} />
             ) : (
               <>
-                <Select.Value className={styles.SelectValue} />
+                <span className={styles.SelectValue}>{selectedProjectName}</span>
                 <Select.Icon className={styles.SelectIcon}>
                   <ChevronUp size={18} className={styles.IconOpen} />
                   <ChevronDown size={18} className={styles.IconClosed} />
@@ -77,24 +94,29 @@ export function Header({
               <Select.ScrollUpArrow />
               <Select.Popup className={styles.SelectPopup}>
                 <span className={styles.SelectPopupHeading}>
-                  Projects • {options?.length}
+                  Folders • {storedProjects.length}
                 </span>
-                <Select.Item
-                  key={1}
-                  value={name}
-                  className={styles.SelectOption}
-                >
-                  <Select.ItemText>{name}</Select.ItemText>
-                  <Select.ItemIndicator
-                    className={styles.SelectOptionIndicator}
-                  >
-                    <Check
-                      size={8}
-                      strokeWidth={4}
-                      className={styles.OptionIndicatorIcon}
-                    />
-                  </Select.ItemIndicator>
-                </Select.Item>
+                {storedProjects.map((project) => {
+                  const { id: projectId, name: projectName } = JSON.parse(project);
+                  return (
+                    <Select.Item
+                      key={projectId}
+                      value={projectId}
+                      className={styles.SelectOption}
+                    >
+                      <Select.ItemText>{projectName}</Select.ItemText>
+                      <Select.ItemIndicator
+                        className={styles.SelectOptionIndicator}
+                      >
+                        <Check
+                          size={8}
+                          strokeWidth={4}
+                          className={styles.OptionIndicatorIcon}
+                        />
+                      </Select.ItemIndicator>
+                    </Select.Item>
+                  );
+                })}
                 <button
                   onClick={() => {
                     setIsDialogOpen(true);
@@ -103,7 +125,7 @@ export function Header({
                   className={clsx(styles.SelectOption, styles.Add)}
                 >
                   <Plus size={16} strokeWidth={1.5} />
-                  Add project
+                  Add folder
                 </button>
               </Select.Popup>
               <Select.ScrollDownArrow />
@@ -128,17 +150,18 @@ export function Header({
       </div>
       <Dialog
         open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        title="New project"
+        onClose={() => { setIsDialogOpen(false); setAddProjectError(null); }}
+        title="New folder"
       >
+        {addProjectError && <Callout type="error" content={addProjectError} />}
         <Field
-          label="Figma Project ID or URL"
+          label="Figma Folder ID or URL"
           required
           value={newProjectId}
           onChange={(value) => setNewProjectId(value)}
         />
-        <Button type="secondary" align="end" onClick={handleAddProject}>
-          Add project
+        <Button type="secondary" align="end" onClick={handleAddProject} disabled={isAdding}>
+          {isAdding ? "Adding..." : "Add folder"}
         </Button>
       </Dialog>
       <SettingsView

@@ -53,3 +53,12 @@
 .Button.Secondary:hover {
   background-color: #3d3d3d;
 }
+
+.Button.Disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.Button.Fat {
+  padding: 1rem;
+}

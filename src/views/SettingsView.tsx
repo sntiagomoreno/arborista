@@ -9,6 +9,10 @@ import { Dialog as BaseDialog } from "@base-ui-components/react";
 import { Dialog } from "@/components/Dialog";
 import { use, useState } from "react";
 import { Field } from "@/components/Field";
+import { useStoredData } from "@/context/StoredDataContext";
+import { fetchProject } from "@/utils/fetchProject";
+import { fetchProfile } from "@/utils/fetchProfile";
+import { Callout } from "@/components/Callout";
 
 type SettingsViewProps =
   | { asDialog?: false; open?: never; onClose?: never }
@@ -23,6 +27,52 @@ export default function SettingsView({
   const { currentUser } = useFigmaData();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newProjectId, setNewProjectId] = useState("");
+  const { storedProjects, clearData, storedAccessToken, saveProject, saveAccessToken } =
+    useStoredData();
+  const [error, setError] = useState<string | null>(null);
+  const [isUpdateTokenDialogOpen, setIsUpdateTokenDialogOpen] = useState(false);
+  const [newToken, setNewToken] = useState("");
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [isUpdatingToken, setIsUpdatingToken] = useState(false);
+
+  async function handleClearToken() {
+    await clearData();
+    console.log("cleared");
+  }
+
+  async function handleUpdateToken() {
+    setTokenError(null);
+    setIsUpdatingToken(true);
+    try {
+      await fetchProfile(newToken);
+      await saveAccessToken(newToken);
+      setIsUpdateTokenDialogOpen(false);
+      setNewToken("");
+    } catch {
+      setTokenError("Invalid or expired access token.");
+    } finally {
+      setIsUpdatingToken(false);
+    }
+  }
+
+  async function handleAddProject(id: string) {
+    setError(null);
+    try {
+      const projectResponse = await fetchProject(storedAccessToken, id);
+      console.log("Project data:", projectResponse);
+      setError(null);
+      setIsAddDialogOpen(false);
+      // Save token and project ID after successful validation
+      await saveProject(id, projectResponse.name);
+    } catch (err) {
+      if (err) {
+        console.log(err);
+        setError(
+          "Folder doesn't exist with that ID or you don't have permission to view."
+        );
+      }
+    }
+  }
 
   if (asDialog) {
     return (
@@ -59,14 +109,18 @@ export default function SettingsView({
                 </div>
               )}
               <div className={styles.Section}>
-                <h2 className={styles.SectionHeading}>Added projects</h2>
+                <h2 className={styles.SectionHeading}>Added folders</h2>
 
                 <ul className={styles.SectionList}>
-                  <li className={styles.SectionListItem}>
-                    <div>
-                      <h3 className={styles.ItemLabel}>Project Name</h3>
-                    </div>
-                  </li>
+                  {storedProjects.map((project) => (
+                    <li key={project} className={styles.SectionListItem}>
+                      <div>
+                        <h3 className={styles.ItemLabel}>
+                          {JSON.parse(project).name}
+                        </h3>
+                      </div>
+                    </li>
+                  ))}
                   <li
                     className={clsx(styles.SectionListItem, styles.Interactive)}
                     onClick={() => {
@@ -75,7 +129,7 @@ export default function SettingsView({
                   >
                     <button className={clsx(styles.ItemLabel, styles.Add)}>
                       <Plus size={16} strokeWidth={1.5} />
-                      Add project
+                      Add folder
                     </button>
                   </li>
                 </ul>
@@ -92,7 +146,7 @@ export default function SettingsView({
                         access scopes.
                       </p>
                     </div>
-                    <Button fullWidth type="secondary" size="small">
+                    <Button fullWidth type="secondary" size="small" onClick={() => setIsUpdateTokenDialogOpen(true)}>
                       Update token
                     </Button>
                   </li>
@@ -100,10 +154,16 @@ export default function SettingsView({
                     <div>
                       <h3 className={styles.ItemLabel}>Clear access token</h3>
                       <p className={styles.ItemDescription}>
-                        Clearing your token will remove all your projects too.
+                        Clearing your token will remove all your folders too.
                       </p>
                     </div>
-                    <Button fullWidth type="secondary" size="small" destructive>
+                    <Button
+                      onClick={handleClearToken}
+                      fullWidth
+                      type="secondary"
+                      size="small"
+                      destructive
+                    >
                       Clear token
                     </Button>
                   </li>
@@ -113,18 +173,40 @@ export default function SettingsView({
                 Made with love in Colombia by Santiago Moreno
               </footer>
               <Dialog
+                open={isUpdateTokenDialogOpen}
+                onClose={() => { setIsUpdateTokenDialogOpen(false); setTokenError(null); }}
+                title="Update access token"
+              >
+                {tokenError && <Callout type="error" content={tokenError} />}
+                <Field
+                  label="New access token"
+                  required
+                  value={newToken}
+                  onChange={(value) => setNewToken(value)}
+                  description="Only visible to you and stored locally"
+                />
+                <Button type="secondary" align="end" onClick={handleUpdateToken} disabled={isUpdatingToken}>
+                  {isUpdatingToken ? "Updating..." : "Update token"}
+                </Button>
+              </Dialog>
+              <Dialog
                 open={isAddDialogOpen}
                 onClose={() => setIsAddDialogOpen(false)}
-                title="New project"
+                title="New folder"
               >
+                {error && <Callout type="error" content={error} />}
                 <Field
-                  label="Figma Project ID or URL"
+                  label="Figma Folder ID or URL"
                   required
                   value={newProjectId}
                   onChange={(value) => setNewProjectId(value)}
                 />
-                <Button type="secondary" align="end" onClick={() => {}}>
-                  Add project
+                <Button
+                  type="secondary"
+                  align="end"
+                  onClick={() => handleAddProject(newProjectId)}
+                >
+                  Add folder
                 </Button>
               </Dialog>
             </main>
@@ -163,12 +245,12 @@ export default function SettingsView({
           </div>
         )}
         <div className={styles.Section}>
-          <h2 className={styles.SectionHeading}>Added projects</h2>
+          <h2 className={styles.SectionHeading}>Added folders</h2>
 
           <ul className={styles.SectionList}>
             <li className={styles.SectionListItem}>
               <div>
-                <h3 className={styles.ItemLabel}>Project Name</h3>
+                <h3 className={styles.ItemLabel}>Folder Name</h3>
               </div>
             </li>
             <li className={clsx(styles.SectionListItem, styles.Interactive)}>
@@ -180,7 +262,7 @@ export default function SettingsView({
                 className={clsx(styles.ItemLabel, styles.Add)}
               >
                 <Plus size={16} strokeWidth={1.5} />
-                Add project
+                Add folder
               </button>
             </li>
           </ul>
@@ -197,7 +279,7 @@ export default function SettingsView({
                   access scopes.
                 </p>
               </div>
-              <Button fullWidth type="secondary" size="small">
+              <Button fullWidth type="secondary" size="small" onClick={() => setIsUpdateTokenDialogOpen(true)}>
                 Update token
               </Button>
             </li>
@@ -205,10 +287,16 @@ export default function SettingsView({
               <div>
                 <h3 className={styles.ItemLabel}>Clear access token</h3>
                 <p className={styles.ItemDescription}>
-                  Clearing your token will remove all your projects too.
+                  Clearing your token will remove all your folders too.
                 </p>
               </div>
-              <Button fullWidth type="secondary" size="small" destructive>
+              <Button
+                onClick={handleClearToken}
+                fullWidth
+                type="secondary"
+                size="small"
+                destructive
+              >
                 Clear token
               </Button>
             </li>
@@ -217,6 +305,23 @@ export default function SettingsView({
         <footer className={styles.Footer}>
           Made with love in Colombia by Santiago Moreno
         </footer>
+        <Dialog
+          open={isUpdateTokenDialogOpen}
+          onClose={() => { setIsUpdateTokenDialogOpen(false); setTokenError(null); }}
+          title="Update access token"
+        >
+          {tokenError && <Callout type="error" content={tokenError} />}
+          <Field
+            label="New access token"
+            required
+            value={newToken}
+            onChange={(value) => setNewToken(value)}
+            description="Only visible to you and stored locally"
+          />
+          <Button type="secondary" align="end" onClick={handleUpdateToken} disabled={isUpdatingToken}>
+            {isUpdatingToken ? "Updating..." : "Update token"}
+          </Button>
+        </Dialog>
       </main>
     </div>
   );

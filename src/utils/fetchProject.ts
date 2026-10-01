@@ -2,7 +2,7 @@ import {
   type ErrorResponsePayloadWithErrMessage,
   type GetProjectFilesResponse,
 } from "@figma/rest-api-spec";
-import { FIGMA_API_URL } from "./apiUrl";
+import { FIGMA_API_URL, FIGMA_API_URL_V2 } from "./apiUrl";
 
 export interface ProjectQueryData {
   name: string;
@@ -11,13 +11,16 @@ export interface ProjectQueryData {
 
 export async function fetchProject(
   accessToken: string,
-  projectId: string
+  projectId: string,
 ): Promise<ProjectQueryData> {
-  const response = await fetch(`${FIGMA_API_URL}/projects/${projectId}/files`, {
-    headers: {
-      "X-Figma-Token": accessToken,
+  const response = await fetch(
+    `${FIGMA_API_URL_V2}/folders/${projectId}/files`,
+    {
+      headers: {
+        "X-Figma-Token": accessToken,
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch project: ${response.statusText}`);
@@ -32,7 +35,7 @@ export async function fetchProject(
     throw new Error(
       errorData.status
         ? `${errorData.status}: ${errorData.err}`
-        : errorData.err || "Unknown error"
+        : errorData.err || "Unknown error",
     );
   }
 

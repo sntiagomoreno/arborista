@@ -8,6 +8,7 @@ import { useView } from "./context/ViewContext";
 import SettingsView from "./views/SettingsView";
 import { useStoredData } from "./context/StoredDataContext";
 import LoginView from "./views/LoginView";
+import { FIGMA_API_URL_V2 } from "./utils/apiUrl";
 
 interface ProjectFile {
   key: string;
@@ -88,14 +89,15 @@ function App() {
 
   // FIGMA API
   async function fetchProject() {
+    console.log("Fetching project data for project ID:", projectId);
     try {
       const response = await fetch(
-        `${FIGMA_API_URL}/projects/${projectId}/files`,
+        `${FIGMA_API_URL_V2}/folders/${projectId}/files`,
         {
           headers: {
             "X-Figma-Token": `${accessToken}`,
           },
-        }
+        },
       );
       const data = await response.json();
       if (data.err) {
@@ -108,9 +110,10 @@ function App() {
         // Fetch file details for each file
         const entries = await Promise.all(
           data.files.map(async (file: ProjectFile) => {
+            console.log("trying to fetch file details for:", file.key);
             const detailData = await fetchFile(file.key);
             return [file.key, detailData] as const;
-          })
+          }),
         );
 
         const mappedDetails = Object.fromEntries(entries);
@@ -133,23 +136,24 @@ function App() {
           headers: {
             "X-Figma-Token": `${accessToken}`,
           },
-        }
+        },
       );
       const data = await response.json();
       if (data.err) {
         throw new Error(data.err);
       }
+      console.log("File data:", data);
       return data;
     } catch (error) {
       console.error("Failed to fetch file data:", error);
     }
   }
 
-  const { storedAccessToken, storedProjectIds } = useStoredData();
+  const { storedAccessToken, storedProjects } = useStoredData();
 
   return (
     <main className="root">
-      {storedAccessToken && storedProjectIds.length > 0 ? (
+      {storedAccessToken && storedProjects.length > 0 ? (
         <DashboardView />
       ) : (
         <LoginView />

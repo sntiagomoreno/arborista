@@ -8,6 +8,8 @@ interface ButtonProps {
   align?: "start" | "center" | "end";
   destructive?: boolean;
   fullWidth?: boolean;
+  disabled?: boolean;
+  fat?: boolean;
   onClick?: () => void;
 }
 
@@ -18,6 +20,8 @@ export function Button({
   destructive,
   fullWidth = false,
   align,
+  disabled,
+  fat,
   onClick,
 }: ButtonProps) {
   return (
@@ -33,8 +37,10 @@ export function Button({
         [styles.AlignCenter]: align === "center",
         [styles.AlignEnd]: align === "end",
         [styles.Destructive]: destructive,
+        [styles.Disabled]: disabled,
+        [styles.Fat]: fat,
       })}
-      onClick={onClick}
+      onClick={disabled ? () => {} : onClick}
     >
       {children}
     </button>

@@ -6,13 +6,14 @@ import styles from "./LoginView.module.css";
 import { useCurrentUserQuery } from "@/hooks/useFigmaQueries";
 import { fetchProfile } from "@/utils/fetchProfile";
 import { fetchProject } from "@/utils/fetchProject";
+import { Callout } from "@/components/Callout";
 
 export default function LoginView() {
-  const { storedAccessToken, storedProjectIds, saveAccessToken } =
+  const { storedAccessToken, storedProjects, saveAccessToken, saveProject } =
     useStoredData();
   const [token, setToken] = useState(storedAccessToken);
   const [projectId, setProjectId] = useState(
-    storedProjectIds.length > 0 ? storedProjectIds[0] : ""
+    storedProjects.length > 0 ? JSON.parse(storedProjects[0]).id : ""
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -25,11 +26,15 @@ export default function LoginView() {
         const projectResponse = await fetchProject(accessToken, projectId);
         console.log("Project data:", projectResponse);
         setError(null);
+
+        // Save token and project ID after successful validation
+        await saveAccessToken(accessToken);
+        await saveProject(projectId, projectResponse.name);
       } catch (err) {
         if (err) {
           console.log(err);
           setError(
-            "Project doesn't exist with that ID or you don't have permission to view."
+            "Folder doesn't exist with that ID or you don't have permission to view."
           );
         }
       }
@@ -44,16 +49,16 @@ export default function LoginView() {
   return (
     <div className={styles.View}>
       <header className={styles.Header}>
-        <h1 className={styles.Title}>Connect your first Figma project</h1>
+        <h1 className={styles.Title}>Connect your first Figma folder</h1>
         <p className={styles.Description}>
           Make sure your Figma access token includes at least{" "}
           <strong>read access</strong> to Current user, File metadata, File
-          version and Projects.
+          version and Folders.
         </p>
       </header>
 
       <main className={styles.Main}>
-        {error && <div className={styles.ErrorMessage}>{error}</div>}
+        {error && <Callout type="error" content={error} />}
         <div className={styles.Form}>
           <Field
             label="Figma access token"
@@ -62,12 +67,17 @@ export default function LoginView() {
             description="Only visible to you and stored locally"
           />
           <Field
-            label="Project ID"
+            label="Folder ID"
             value={projectId ? projectId : ""}
             onChange={(value) => setProjectId(value)}
           />
         </div>
-        <Button fullWidth onClick={() => handleSave(token, projectId)}>
+        <Button
+          fat
+          disabled={!token.length || !projectId.length}
+          fullWidth
+          onClick={() => handleSave(token, projectId)}
+        >
           Save
         </Button>
       </main>

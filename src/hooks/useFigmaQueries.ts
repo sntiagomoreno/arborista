@@ -6,7 +6,7 @@ import { fetchProfile } from "@/utils/fetchProfile";
 
 // Simple query keys for cache management
 export const figmaQueryKeys = {
-  project: (projectId: string) => ["figma", "project", projectId] as const,
+  project: (projectId: string) => ["figma", "folder", projectId] as const,
   file: (fileKey: string) => ["figma", "file", fileKey] as const,
 };
 
@@ -53,17 +53,17 @@ export function useCurrentUserQuery(accessToken: string) {
 }
 
 // Hook for fetching multiple files in parallel
-// export function useFilesQueries(accessToken: string, files: ProjectFile[]) {
-//   return useQueries({
-//     queries: files.map((file) => ({
-//       queryKey: figmaQueryKeys.file(file.key),
-//       queryFn: () => fetchFile(accessToken, file.key),
-//       enabled: !!(accessToken && file.key),
-//       staleTime: 5 * 60 * 1000,
-//       gcTime: 10 * 60 * 1000,
-//     })),
-//   })
-// }
+export function useFilesQueries(accessToken: string, files: { key: string }[]) {
+  return useQueries({
+    queries: files.map((file) => ({
+      queryKey: figmaQueryKeys.file(file.key),
+      queryFn: () => fetchFile(accessToken, file.key),
+      enabled: !!(accessToken && file.key),
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    })),
+  });
+}
 
 // Combined hook that fetches project and then all its files
 // export function useProjectWithFiles(accessToken: string, projectId: string) {

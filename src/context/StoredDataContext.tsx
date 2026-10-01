@@ -9,8 +9,10 @@ import { store } from "@/store";
 
 interface StoredDataContextType {
   storedAccessToken: string;
-  storedProjectIds: string[];
+  storedProjects: string[];
   saveAccessToken: (token: string) => Promise<void>;
+  saveProject: (id: string, name: string) => Promise<void>;
+  clearData: () => Promise<void>;
 }
 
 const StoredDataContext = createContext<StoredDataContextType | undefined>(
@@ -23,7 +25,7 @@ export function StoredDataProvider({
   children: React.ReactNode;
 }) {
   const [storedAccessToken, setStoredAccessToken] = useState<string>("");
-  const [storedProjectIds, setStoredProjectIds] = useState<string[]>([]);
+  const [storedProjects, setStoredProjects] = useState<string[]>([]);
 
   const saveAccessToken = useCallback(async (token: string) => {
     await store.set("figma-access-token", token);
@@ -31,19 +33,40 @@ export function StoredDataProvider({
     setStoredAccessToken(token);
   }, []);
 
+  const saveProject = useCallback(async (id: string, name: string) => {
+    const list = [...storedProjects, JSON.stringify({ id, name })];
+    await store.set("projects", list);
+    await store.save();
+    setStoredProjects(list);
+  }, [storedProjects]);
+
+  const clearData = useCallback(async () => {
+    console.log("happening");
+    await store.clear();
+    await store.save();
+    setStoredAccessToken("");
+    setStoredProjects([]);
+  }, []);
+
   useEffect(() => {
     (async () => {
       const accessToken = (await store.get("figma-access-token")) as string;
-      const projectIds = (await store.get<string[]>("project-ids")) ?? [];
+      const projectIds = (await store.get<string[]>("projects")) ?? [];
       console.log("Loaded from store:", { accessToken, projectIds });
       setStoredAccessToken(accessToken);
-      setStoredProjectIds(projectIds);
+      setStoredProjects(projectIds);
     })();
   }, [store]);
 
   return (
     <StoredDataContext.Provider
-      value={{ storedAccessToken, storedProjectIds, saveAccessToken }}
+      value={{
+        storedAccessToken,
+        storedProjects,
+        saveAccessToken,
+        saveProject,
+        clearData,
+      }}
     >
       {children}
     </StoredDataContext.Provider>

@@ -7,7 +7,13 @@ import { ViewProvider } from "./context/ViewContext";
 import { FigmaDataProvider } from "./context/FigmaDataContext";
 import { StoredDataProvider } from "./context/StoredDataContext";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

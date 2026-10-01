@@ -15,9 +15,7 @@ import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { useState } from "react";
 import { Skeleton } from "../Skeleton";
-
-// const FIGMA_ACCESS_TOKEN = import.meta.env.VITE_FIGMA_ACCESS_TOKEN;
-const FIGMA_ACCESS_TOKEN = "figd_m77RMNyV8lgB7Mm4NohrkycImuNSNUOQswpORwfa";
+import { useStoredData } from "../../context/StoredDataContext";
 
 interface FileCardProps {
   file: ProjectQueryData["files"][number];
@@ -53,8 +51,8 @@ interface BranchListProps {
 }
 
 function BranchList({ fileKey }: BranchListProps) {
-  const { data, isLoading, error } = useFileQuery(FIGMA_ACCESS_TOKEN, fileKey);
-
+  const { storedAccessToken } = useStoredData();
+  const { data, isLoading, error } = useFileQuery(storedAccessToken, fileKey);
   if (isLoading) {
     return (
       <div>
@@ -71,6 +69,7 @@ function BranchList({ fileKey }: BranchListProps) {
   }
 
   if (error) {
+    console.log(error);
     return <div>Error loading branches.</div>;
   }
 
@@ -92,7 +91,7 @@ function BranchList({ fileKey }: BranchListProps) {
               <Clock size={12} /> <span>Last updated</span>
             </div>
           </header>
-          <SortedBranchList branches={data.branches} />
+          <SortedBranchList branches={data.branches} accessToken={storedAccessToken} />
         </div>
       )}
     </div>
@@ -101,12 +100,13 @@ function BranchList({ fileKey }: BranchListProps) {
 
 interface SortedBranchListProps {
   branches: GetFileResponse["branches"];
+  accessToken: string;
 }
 
-function SortedBranchList({ branches }: SortedBranchListProps) {
+function SortedBranchList({ branches, accessToken }: SortedBranchListProps) {
   // Get version data for all branches using consistent hook calls
   const versionQueries = branches!.map((branch) =>
-    useFileVersionQuery(FIGMA_ACCESS_TOKEN, branch.key)
+    useFileVersionQuery(accessToken, branch.key),
   );
 
   const allVersionsLoaded = versionQueries.every((query) => !query.isLoading);

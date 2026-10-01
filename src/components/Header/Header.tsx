@@ -1,12 +1,5 @@
 import { Avatar, Select } from "@base-ui-components/react";
-import {
-  Check,
-  ChevronDown,
-  ChevronUp,
-  MoreHorizontal,
-  Plus,
-  Settings,
-} from "react-feather";
+import { Check, ChevronDown, ChevronUp, Plus } from "react-feather";
 import styles from "./Header.module.css";
 import clsx from "clsx";
 import { Skeleton } from "../Skeleton";
@@ -16,10 +9,10 @@ import { Dialog } from "../Dialog";
 import { Field } from "../Field";
 import { useState } from "react";
 import { Button } from "../Button";
-import { useView } from "@/context/ViewContext";
 import SettingsView from "@/views/SettingsView";
 import { useStoredData } from "@/context/StoredDataContext";
 import { fetchProject } from "@/utils/fetchProject";
+import { parseFolderId } from "@/utils/parseFolderId";
 import { Callout } from "../Callout";
 
 interface HeaderProps {
@@ -35,7 +28,6 @@ export function Header({
   loading,
   currentUserData,
 }: HeaderProps) {
-  const { setView } = useView();
   const { storedAccessToken, saveProject, storedProjects } = useStoredData();
   const selectedProjectName = storedProjects
     .map((p) => JSON.parse(p) as { id: string; name: string })
@@ -51,9 +43,11 @@ export function Header({
   async function handleAddProject() {
     setAddProjectError(null);
     setIsAdding(true);
+    const folderId = parseFolderId(newProjectId);
     try {
-      const projectResponse = await fetchProject(storedAccessToken, newProjectId);
-      await saveProject(newProjectId, projectResponse.name);
+      const projectResponse = await fetchProject(storedAccessToken, folderId);
+      await saveProject(folderId, projectResponse.name);
+      onProjectChange(folderId);
       setIsDialogOpen(false);
       setNewProjectId("");
     } catch {
@@ -168,6 +162,7 @@ export function Header({
         asDialog
         open={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        onFolderAdded={onProjectChange}
       />
     </header>
   );

@@ -6,6 +6,7 @@ import styles from "./LoginView.module.css";
 import { useCurrentUserQuery } from "@/hooks/useFigmaQueries";
 import { fetchProfile } from "@/utils/fetchProfile";
 import { fetchProject } from "@/utils/fetchProject";
+import { parseFolderId } from "@/utils/parseFolderId";
 import { Callout } from "@/components/Callout";
 
 export default function LoginView() {
@@ -23,13 +24,14 @@ export default function LoginView() {
       console.log("User data:", data);
       setError(null);
       try {
-        const projectResponse = await fetchProject(accessToken, projectId);
+        const folderId = parseFolderId(projectId);
+        const projectResponse = await fetchProject(accessToken, folderId);
         console.log("Project data:", projectResponse);
         setError(null);
 
         // Save token and project ID after successful validation
         await saveAccessToken(accessToken);
-        await saveProject(projectId, projectResponse.name);
+        await saveProject(folderId, projectResponse.name);
       } catch (err) {
         if (err) {
           console.log(err);

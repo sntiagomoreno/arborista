@@ -1,6 +1,6 @@
 import { useView } from "@/context/ViewContext";
 import { Avatar } from "@base-ui-components/react";
-import { Plus, X } from "react-feather";
+import { Plus, Trash2, X } from "react-feather";
 import styles from "./SettingsView.module.css";
 import { Button } from "@/components/Button";
 import clsx from "clsx";
@@ -11,29 +11,32 @@ import { use, useState } from "react";
 import { Field } from "@/components/Field";
 import { useStoredData } from "@/context/StoredDataContext";
 import { fetchProject } from "@/utils/fetchProject";
+import { parseFolderId } from "@/utils/parseFolderId";
 import { fetchProfile } from "@/utils/fetchProfile";
 import { Callout } from "@/components/Callout";
 
 type SettingsViewProps =
-  | { asDialog?: false; open?: never; onClose?: never }
-  | { asDialog: true; open: boolean; onClose?: () => void };
+  | { asDialog?: false; open?: never; onClose?: never; onFolderAdded?: never }
+  | { asDialog: true; open: boolean; onClose?: () => void; onFolderAdded?: (id: string) => void };
 
 export default function SettingsView({
   asDialog,
   open,
   onClose,
+  onFolderAdded,
 }: SettingsViewProps) {
   const { setView } = useView();
   const { currentUser } = useFigmaData();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newProjectId, setNewProjectId] = useState("");
-  const { storedProjects, clearData, storedAccessToken, saveProject, saveAccessToken } =
+  const { storedProjects, clearData, storedAccessToken, saveProject, saveAccessToken, removeProject } =
     useStoredData();
   const [error, setError] = useState<string | null>(null);
   const [isUpdateTokenDialogOpen, setIsUpdateTokenDialogOpen] = useState(false);
   const [newToken, setNewToken] = useState("");
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [isUpdatingToken, setIsUpdatingToken] = useState(false);
+  const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
 
   async function handleClearToken() {
     await clearData();
@@ -57,13 +60,15 @@ export default function SettingsView({
 
   async function handleAddProject(id: string) {
     setError(null);
+    const folderId = parseFolderId(id);
     try {
-      const projectResponse = await fetchProject(storedAccessToken, id);
+      const projectResponse = await fetchProject(storedAccessToken, folderId);
       console.log("Project data:", projectResponse);
       setError(null);
       setIsAddDialogOpen(false);
       // Save token and project ID after successful validation
-      await saveProject(id, projectResponse.name);
+      await saveProject(folderId, projectResponse.name);
+      onFolderAdded?.(folderId);
     } catch (err) {
       if (err) {
         console.log(err);
@@ -112,15 +117,25 @@ export default function SettingsView({
                 <h2 className={styles.SectionHeading}>Added folders</h2>
 
                 <ul className={styles.SectionList}>
-                  {storedProjects.map((project) => (
-                    <li key={project} className={styles.SectionListItem}>
-                      <div>
-                        <h3 className={styles.ItemLabel}>
-                          {JSON.parse(project).name}
-                        </h3>
-                      </div>
-                    </li>
-                  ))}
+                  {storedProjects.map((project) => {
+                    const { id, name } = JSON.parse(project);
+                    return (
+                      <li
+                        key={project}
+                        className={clsx(styles.SectionListItem, styles.FolderItem)}
+                        onMouseEnter={() => setHoveredFolderId(id)}
+                        onMouseLeave={() => setHoveredFolderId(null)}
+                      >
+                        <h3 className={styles.ItemLabel}>{name}</h3>
+                        <button
+                          className={clsx(styles.DeleteButton, hoveredFolderId === id && styles.Visible)}
+                          onClick={() => removeProject(id)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </li>
+                    );
+                  })}
                   <li
                     className={clsx(styles.SectionListItem, styles.Interactive)}
                     onClick={() => {
@@ -248,19 +263,31 @@ export default function SettingsView({
           <h2 className={styles.SectionHeading}>Added folders</h2>
 
           <ul className={styles.SectionList}>
-            <li className={styles.SectionListItem}>
-              <div>
-                <h3 className={styles.ItemLabel}>Folder Name</h3>
-              </div>
-            </li>
-            <li className={clsx(styles.SectionListItem, styles.Interactive)}>
-              <button
-                //   onClick={() => {
-                //     setIsDialogOpen(true);
-                //     setIsSelectOpen(false);
-                //   }}
-                className={clsx(styles.ItemLabel, styles.Add)}
-              >
+            {storedProjects.map((project) => {
+              const { id, name } = JSON.parse(project);
+              return (
+                <li
+                  key={project}
+                  className={clsx(styles.SectionListItem, styles.FolderItem)}
+                  onMouseEnter={() => setHoveredFolderId(id)}
+                  onMouseLeave={() => setHoveredFolderId(null)}
+                >
+                  <h3 className={styles.ItemLabel}>{name}</h3>
+                  <button
+                    className={styles.DeleteButton}
+                    style={{ opacity: hoveredFolderId === id ? 1 : 0, pointerEvents: hoveredFolderId === id ? "auto" : "none" }}
+                    onClick={() => removeProject(id)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </li>
+              );
+            })}
+            <li
+              className={clsx(styles.SectionListItem, styles.Interactive)}
+              onClick={() => setIsAddDialogOpen(true)}
+            >
+              <button className={clsx(styles.ItemLabel, styles.Add)}>
                 <Plus size={16} strokeWidth={1.5} />
                 Add folder
               </button>

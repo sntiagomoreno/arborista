@@ -12,6 +12,7 @@ interface StoredDataContextType {
   storedProjects: string[];
   saveAccessToken: (token: string) => Promise<void>;
   saveProject: (id: string, name: string) => Promise<void>;
+  removeProject: (id: string) => Promise<void>;
   clearData: () => Promise<void>;
 }
 
@@ -35,6 +36,13 @@ export function StoredDataProvider({
 
   const saveProject = useCallback(async (id: string, name: string) => {
     const list = [...storedProjects, JSON.stringify({ id, name })];
+    await store.set("projects", list);
+    await store.save();
+    setStoredProjects(list);
+  }, [storedProjects]);
+
+  const removeProject = useCallback(async (id: string) => {
+    const list = storedProjects.filter((p) => JSON.parse(p).id !== id);
     await store.set("projects", list);
     await store.save();
     setStoredProjects(list);
@@ -65,6 +73,7 @@ export function StoredDataProvider({
         storedProjects,
         saveAccessToken,
         saveProject,
+        removeProject,
         clearData,
       }}
     >

@@ -94,7 +94,7 @@
 .SectionList {
   background-color: #252424;
   border: 1px solid #2d2d2d;
-  border-radius: 8px;
+  border-radius: 16px;
 }
 
 .SectionListItem {
@@ -129,6 +129,43 @@
 
 .Add {
   color: #ecf6af;
+}
+
+.FolderItem {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.DeleteButton {
+  all: unset;
+  cursor: pointer;
+  color: #9d9d9d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: color 120ms, background-color 120ms;
+  flex-shrink: 0;
+}
+
+.DeleteButton.Visible {
+  animation: fadeIn 120ms ease-out forwards;
+  pointer-events: auto;
+}
+
+
+.DeleteButton:hover {
+  color: #ff6b6b;
+  background-color: #3a2424;
 }
 
 .Add:active {

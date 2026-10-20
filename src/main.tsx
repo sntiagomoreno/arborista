@@ -1,4 +1,5 @@
 import "./mocks/tauriStub";
+import "@fontsource-variable/radio-canada-big/wght.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

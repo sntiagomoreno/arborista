@@ -21,13 +21,13 @@ This is a **Tauri + React + TypeScript** desktop application called "Arborista" 
 
 ### Backend (Rust/Tauri)
 - **Main**: `src-tauri/src/main.rs` - Entry point
-- **Core logic**: `src-tauri/src/lib.rs` - Tauri app setup with system tray functionality
+- **Core logic**: `src-tauri/src/lib.rs` - Tauri app setup, plugins and window close/reopen handling
 - **Configuration**: `src-tauri/tauri.conf.json` - App settings and build config
 
 ### Key Features
 - **Figma API Integration**: Fetches project files and branch data using user's access token
 - **Local Storage**: Securely stores Figma tokens and project IDs using Tauri store plugin
-- **System Tray App**: Designed as a menubar/tray application (360x600px, non-resizable)
+- **Desktop App**: Regular macOS dock app (360x620px window, non-resizable)
 - **Branch Visualization**: Displays files in Figma projects with their branch count and last modified dates
 
 ### Dependencies
@@ -37,9 +37,8 @@ This is a **Tauri + React + TypeScript** desktop application called "Arborista" 
 
 ### App Behavior
 - Window hides on close (doesn't quit)
-- Tray icon click toggles window visibility
-- Window positioned under tray icon when shown
-- Transparent window background
+- Clicking the dock icon reopens the hidden window
+- Auto-updates via the Tauri updater (Settings → App updates)
 - Uses Tauri store for persistent data across sessions
 
 ### Development Notes

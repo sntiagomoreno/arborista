@@ -108,7 +108,7 @@ export function UpdaterProvider({ children }: { children: React.ReactNode }) {
     if (!enabled) return;
     getVersion().then(setCurrentVersion);
     checkForUpdates();
-    // The tray window is hidden rather than closed, so re-check on focus.
+    // The window is hidden rather than closed, so re-check on focus.
     const onFocus = () => {
       if (Date.now() - lastCheck.current > CHECK_INTERVAL_MS) checkForUpdates();
     };

@@ -19,7 +19,7 @@ interface UpdaterContextValue {
   progress: number | null;
   error: string | null;
   updateAvailable: boolean;
-  checkForUpdates: () => Promise<void>;
+  checkForUpdates: (silent?: boolean) => Promise<void>;
   installUpdate: () => Promise<void>;
 }
 
@@ -39,7 +39,7 @@ export function UpdaterProvider({ children }: { children: React.ReactNode }) {
   const update = useRef<Update | null>(null);
   const lastCheck = useRef(0);
 
-  const checkForUpdates = useCallback(async () => {
+  const checkForUpdates = useCallback(async (silent = false) => {
     if (DEMO) {
       setStatus("checking");
       await new Promise((r) => setTimeout(r, 800));
@@ -60,7 +60,14 @@ export function UpdaterProvider({ children }: { children: React.ReactNode }) {
       } else {
         setStatus("idle");
       }
-    } catch {
+    } catch (e) {
+      // No release manifest published (404 / invalid JSON) just means there is
+      // nothing newer; only real failures (offline, etc.) are worth surfacing,
+      // and never for the automatic background checks.
+      if (silent || /valid release JSON/i.test(String(e))) {
+        setStatus("idle");
+        return;
+      }
       setError("Couldn't check for updates. Try again later.");
       setStatus("error");
     }
@@ -107,10 +114,11 @@ export function UpdaterProvider({ children }: { children: React.ReactNode }) {
     }
     if (!enabled) return;
     getVersion().then(setCurrentVersion);
-    checkForUpdates();
+    checkForUpdates(true);
     // The window is hidden rather than closed, so re-check on focus.
     const onFocus = () => {
-      if (Date.now() - lastCheck.current > CHECK_INTERVAL_MS) checkForUpdates();
+      if (Date.now() - lastCheck.current > CHECK_INTERVAL_MS)
+        checkForUpdates(true);
     };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);

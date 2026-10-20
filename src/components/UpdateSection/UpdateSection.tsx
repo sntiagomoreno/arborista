@@ -50,7 +50,7 @@ export function UpdateSection() {
               type="secondary"
               size="small"
               disabled={status === "checking"}
-              onClick={checkForUpdates}
+              onClick={() => checkForUpdates()}
             >
               {status === "checking" ? "Checking…" : "Check for updates"}
             </Button>

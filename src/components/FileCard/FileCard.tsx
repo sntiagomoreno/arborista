@@ -1,8 +1,7 @@
-import { ArrowRight, Clock, GitBranch } from "react-feather";
+import { Clock, GitBranch } from "react-feather";
 import { Tag } from "../Tag";
 import {
   GetFileVersionsResponse,
-  GetProjectFilesResponse,
   GetFileResponse,
 } from "@figma/rest-api-spec";
 import { ProjectQueryData } from "@/utils/fetchProject";
@@ -11,11 +10,37 @@ import { formatDate, getStatus } from "@/utils/formatDate";
 import styles from "./FileCard.module.css";
 import { Avatar, ContextMenu, Tooltip } from "@base-ui-components/react";
 import clsx from "clsx";
-import { openPath, openUrl } from "@tauri-apps/plugin-opener";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { useState } from "react";
 import { Skeleton } from "../Skeleton";
 import { useStoredData } from "../../context/StoredDataContext";
+
+export function FileCardSkeleton() {
+  return (
+    <div className={styles.CardContainer}>
+      <div className={styles.FileHeader}>
+        <Skeleton width={150} height={14} radius={4} />
+        <div style={{ marginTop: "0.375rem" }}>
+          <Skeleton width={110} height={10} radius={3} />
+        </div>
+      </div>
+      <header className={styles.BranchListHeader}>
+        <Skeleton width={80} height={12} radius={4} />
+        <Skeleton width={80} height={12} radius={4} />
+      </header>
+      {[0, 1].map((i) => (
+        <div key={i} className={styles.BranchListItem}>
+          <Skeleton width={i === 0 ? 120 : 90} height={13} radius={4} />
+          <div className={styles.BranchListItemLastUpdated}>
+            <Skeleton width={58} height={20} radius={10} />
+            <Skeleton width={24} height={24} radius={12} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface FileCardProps {
   file: ProjectQueryData["files"][number];
@@ -69,8 +94,14 @@ function BranchList({ fileKey }: BranchListProps) {
   }
 
   if (error) {
-    console.log(error);
-    return <div>Error loading branches.</div>;
+    const isRateLimit = (error as Error)?.message === "429";
+    return (
+      <div className={styles.ErrorMessage}>
+        {isRateLimit
+          ? "Rate limit reached — try again in a moment."
+          : "Could not load branches."}
+      </div>
+    );
   }
 
   return (
@@ -308,50 +339,3 @@ function BranchListItem({ name, branchKey, versionData }: BranchListItemProps) {
   );
 }
 
-function TooltipWithScroll({ name }: { name: string }) {
-  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
-
-  const handleOpenChange = (open: boolean) => {
-    setIsTooltipOpen(open);
-
-    if (open) {
-      const onScroll = () => {
-        setIsTooltipOpen(false);
-        document.removeEventListener("scroll", onScroll, true);
-      };
-      document.addEventListener("scroll", onScroll, true);
-    }
-  };
-
-  return (
-    <Tooltip.Root
-      delay={1000}
-      hoverable={false}
-      open={isTooltipOpen}
-      onOpenChange={handleOpenChange}
-    >
-      <div className={styles.BranchName}>
-        <Tooltip.Trigger aria-label={name} className={styles.TooltipTrigger}>
-          <span>{name}</span>
-        </Tooltip.Trigger>
-      </div>
-      <Tooltip.Portal>
-        <Tooltip.Positioner
-          sideOffset={8}
-          align="center"
-          alignOffset={-8}
-          collisionAvoidance={{
-            side: "shift",
-            align: "shift",
-            fallbackAxisSide: "none",
-          }}
-          collisionPadding={16}
-        >
-          <Tooltip.Popup className={styles.BranchNameTooltipPopup}>
-            <span className={styles.TooltipContent}>{name}</span>
-          </Tooltip.Popup>
-        </Tooltip.Positioner>
-      </Tooltip.Portal>
-    </Tooltip.Root>
-  );
-}

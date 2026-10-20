@@ -2,7 +2,42 @@
   font-size: 0.875rem;
   color: #9d9d9d;
   font-weight: 500;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.RefreshButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9d9d9d;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  padding: 2px;
+  border-radius: 4px;
+  line-height: 0;
+}
+
+.SectionHeading:hover .RefreshButton {
+  opacity: 1;
+}
+
+.RefreshButton:hover:not(:disabled) {
+  color: #c8c8c8;
+}
+
+.RefreshButton:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.spinning {
+  opacity: 1;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

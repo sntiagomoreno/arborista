@@ -2,7 +2,7 @@ import {
   type ErrorResponsePayloadWithErrMessage,
   type GetProjectFilesResponse,
 } from "@figma/rest-api-spec";
-import { FIGMA_API_URL, FIGMA_API_URL_V2 } from "./apiUrl";
+import { FIGMA_API_URL_V2 } from "./apiUrl";
 
 export interface ProjectQueryData {
   name: string;

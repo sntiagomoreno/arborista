@@ -1,5 +1,4 @@
 import { Dialog as BaseDialog } from "@base-ui-components/react";
-import { Field as BaseField } from "@base-ui-components/react";
 import styles from "./Dialog.module.css";
 import { X } from "react-feather";
 

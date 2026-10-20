@@ -11,6 +11,22 @@
   flex-direction: column;
   gap: 1rem;
   text-align: center;
+  align-items: center;
+  padding-top: 2rem;
+}
+
+.TitleBar {
+  height: 40px;
+  width: 100%;
+  -webkit-app-region: drag;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.Logo {
+  display: block;
+  padding-bottom: 1.25rem;
 }
 
 .Form {

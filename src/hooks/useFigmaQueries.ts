@@ -52,12 +52,19 @@ export function useCurrentUserQuery(accessToken: string) {
   });
 }
 
-// Hook for fetching multiple files in parallel
+const BATCH_SIZE = 5;
+const BATCH_DELAY_MS = 250;
+
+// Hook for fetching multiple files with batched concurrency to avoid rate limiting
 export function useFilesQueries(accessToken: string, files: { key: string }[]) {
   return useQueries({
-    queries: files.map((file) => ({
+    queries: files.map((file, index) => ({
       queryKey: figmaQueryKeys.file(file.key),
-      queryFn: () => fetchFile(accessToken, file.key),
+      queryFn: async () => {
+        const delay = Math.floor(index / BATCH_SIZE) * BATCH_DELAY_MS;
+        if (delay > 0) await new Promise<void>((r) => setTimeout(r, delay));
+        return fetchFile(accessToken, file.key);
+      },
       enabled: !!(accessToken && file.key),
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,

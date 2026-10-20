@@ -1,5 +1,5 @@
 import { Avatar, Select } from "@base-ui-components/react";
-import { Check, ChevronDown, ChevronUp, Plus } from "react-feather";
+import { Check, ChevronDown, ChevronUp, Plus, User } from "react-feather";
 import styles from "./Header.module.css";
 import clsx from "clsx";
 import { Skeleton } from "../Skeleton";
@@ -14,6 +14,7 @@ import { useStoredData } from "@/context/StoredDataContext";
 import { fetchProject } from "@/utils/fetchProject";
 import { parseFolderId } from "@/utils/parseFolderId";
 import { Callout } from "../Callout";
+import { useUpdater } from "@/context/UpdaterContext";
 
 interface HeaderProps {
   selectedProjectId: string;
@@ -29,9 +30,10 @@ export function Header({
   currentUserData,
 }: HeaderProps) {
   const { storedAccessToken, saveProject, storedProjects } = useStoredData();
-  const selectedProjectName = storedProjects
-    .map((p) => JSON.parse(p) as { id: string; name: string })
-    .find((p) => p.id === selectedProjectId)?.name ?? "";
+  const selectedProjectName =
+    storedProjects
+      .map((p) => JSON.parse(p) as { id: string; name: string })
+      .find((p) => p.id === selectedProjectId)?.name ?? "";
 
   const [newProjectId, setNewProjectId] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,6 +41,7 @@ export function Header({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [addProjectError, setAddProjectError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const { updateAvailable } = useUpdater();
 
   async function handleAddProject() {
     setAddProjectError(null);
@@ -51,7 +54,9 @@ export function Header({
       setIsDialogOpen(false);
       setNewProjectId("");
     } catch {
-      setAddProjectError("Folder doesn't exist with that ID or you don't have permission to view.");
+      setAddProjectError(
+        "Folder doesn't exist with that ID or you don't have permission to view.",
+      );
     } finally {
       setIsAdding(false);
     }
@@ -59,23 +64,30 @@ export function Header({
 
   return (
     <header data-tauri-drag-region className={styles.HeaderContainer}>
+      {/* <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}> */}
+      {/* <img
+          src="/icon.png"
+          className={styles.Logo}
+          width={36}
+          height="auto"
+          alt="Arborista"
+        /> */}
       <div>
         <Select.Root
           open={isSelectOpen}
-          onOpenChange={(open) => !open && setIsSelectOpen(!isSelectOpen)}
+          onOpenChange={setIsSelectOpen}
           value={selectedProjectId}
           disabled={loading}
           onValueChange={onProjectChange}
         >
-          <Select.Trigger
-            className={clsx(styles.SelectTrigger)}
-            onClick={() => setIsSelectOpen(!isSelectOpen)}
-          >
+          <Select.Trigger className={clsx(styles.SelectTrigger)}>
             {loading ? (
               <Skeleton width={120} height={24} radius={4} />
             ) : (
               <>
-                <span className={styles.SelectValue}>{selectedProjectName}</span>
+                <span className={styles.SelectValue}>
+                  {selectedProjectName}
+                </span>
                 <Select.Icon className={styles.SelectIcon}>
                   <ChevronUp size={18} className={styles.IconOpen} />
                   <ChevronDown size={18} className={styles.IconClosed} />
@@ -84,14 +96,21 @@ export function Header({
             )}
           </Select.Trigger>
           <Select.Portal>
-            <Select.Positioner sideOffset={5} alignOffset={0} align="start">
+            <Select.Positioner
+              sideOffset={5}
+              alignOffset={0}
+              align="end"
+              side="bottom"
+              alignItemWithTrigger={false}
+            >
               <Select.ScrollUpArrow />
               <Select.Popup className={styles.SelectPopup}>
                 <span className={styles.SelectPopupHeading}>
                   Folders • {storedProjects.length}
                 </span>
                 {storedProjects.map((project) => {
-                  const { id: projectId, name: projectName } = JSON.parse(project);
+                  const { id: projectId, name: projectName } =
+                    JSON.parse(project);
                   return (
                     <Select.Item
                       key={projectId}
@@ -127,24 +146,47 @@ export function Header({
           </Select.Portal>
         </Select.Root>
       </div>
+      {/* </div> */}
       <div className={styles.UserSection}>
         {/* <MoreHorizontal size={24} /> */}
         {currentUserData &&
           (currentUserData.isLoading ? (
             <Skeleton width={28} height={28} radius={16} />
           ) : (
-            <Avatar.Root onClick={() => setIsSettingsOpen(true)}>
+            <Avatar.Root
+              className={styles.SettingsAvatar}
+              data-update-available={updateAvailable || undefined}
+              onClick={() => setIsSettingsOpen(true)}
+            >
               <Avatar.Image
                 src={currentUserData.data?.img_url}
                 alt={currentUserData.data?.handle}
                 style={{ width: 28, height: 28, borderRadius: 16 }}
               />
+              <Avatar.Fallback
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 16,
+                  backgroundColor: "#3a3a3a",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  color: "#9d9d9d",
+                }}
+              >
+                <User size={14} />
+              </Avatar.Fallback>
             </Avatar.Root>
           ))}
       </div>
       <Dialog
         open={isDialogOpen}
-        onClose={() => { setIsDialogOpen(false); setAddProjectError(null); }}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setAddProjectError(null);
+        }}
         title="New folder"
       >
         {addProjectError && <Callout type="error" content={addProjectError} />}
@@ -154,7 +196,12 @@ export function Header({
           value={newProjectId}
           onChange={(value) => setNewProjectId(value)}
         />
-        <Button type="secondary" align="end" onClick={handleAddProject} disabled={isAdding}>
+        <Button
+          type="secondary"
+          align="end"
+          onClick={handleAddProject}
+          disabled={isAdding}
+        >
           {isAdding ? "Adding..." : "Add folder"}
         </Button>
       </Dialog>

@@ -139,6 +139,12 @@
   justify-content: center;
 }
 
+.ErrorMessage {
+  padding: 0.5rem 1rem 0.75rem;
+  font-size: 0.8125rem;
+  color: #9d9d9d;
+}
+
 .FileName {
   display: flex;
   font-weight: 500;

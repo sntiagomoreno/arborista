@@ -1,8 +1,5 @@
 import { FIGMA_API_URL } from "./apiUrl";
-import type {
-  ErrorResponsePayloadWithErrMessage,
-  GetFileResponse,
-} from "@figma/rest-api-spec";
+import type { GetFileResponse } from "@figma/rest-api-spec";
 
 export async function fetchFile(
   accessToken: string,
@@ -17,6 +14,9 @@ export async function fetchFile(
     }
   );
 
+  if (response.status === 429) {
+    throw new Error("429");
+  }
   if (!response.ok) {
     throw new Error(`Failed to fetch file: ${response.statusText}`);
   }

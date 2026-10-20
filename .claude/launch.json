@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "demo",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["VITE_DEMO_MODE=true", "npx", "vite", "--port", "1430"],
+      "port": 1430
+    }
+  ]
+}

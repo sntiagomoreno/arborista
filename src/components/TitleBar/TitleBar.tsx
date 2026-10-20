@@ -1,6 +1,4 @@
-import { getCurrentWindow, type TitleBarStyle } from "@tauri-apps/api/window";
 import styles from "./TitleBar.module.css";
-import { useEffect } from "react";
 
 export function TitleBar() {
   return (

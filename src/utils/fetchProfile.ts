@@ -1,8 +1,5 @@
 import { FIGMA_API_URL } from "./apiUrl";
-import type {
-  ErrorResponsePayloadWithErrMessage,
-  GetMeResponse,
-} from "@figma/rest-api-spec";
+import type { GetMeResponse } from "@figma/rest-api-spec";
 
 export async function fetchProfile(
   accessToken: string

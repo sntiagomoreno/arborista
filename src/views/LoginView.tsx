@@ -3,7 +3,6 @@ import { Field } from "@/components/Field";
 import { useStoredData } from "@/context/StoredDataContext";
 import { useState } from "react";
 import styles from "./LoginView.module.css";
-import { useCurrentUserQuery } from "@/hooks/useFigmaQueries";
 import { fetchProfile } from "@/utils/fetchProfile";
 import { fetchProject } from "@/utils/fetchProject";
 import { parseFolderId } from "@/utils/parseFolderId";
@@ -14,7 +13,7 @@ export default function LoginView() {
     useStoredData();
   const [token, setToken] = useState(storedAccessToken);
   const [projectId, setProjectId] = useState(
-    storedProjects.length > 0 ? JSON.parse(storedProjects[0]).id : ""
+    storedProjects.length > 0 ? JSON.parse(storedProjects[0]).id : "",
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +35,7 @@ export default function LoginView() {
         if (err) {
           console.log(err);
           setError(
-            "Folder doesn't exist with that ID or you don't have permission to view."
+            "Folder doesn't exist with that ID or you don't have permission to view.",
           );
         }
       }
@@ -50,12 +49,20 @@ export default function LoginView() {
 
   return (
     <div className={styles.View}>
+      <div className={styles.TitleBar} data-tauri-drag-region></div>
       <header className={styles.Header}>
+        <img
+          src="/icon.png"
+          className={styles.Logo}
+          width={36}
+          height="auto"
+          alt="Arborista"
+        />
         <h1 className={styles.Title}>Connect your first Figma folder</h1>
         <p className={styles.Description}>
           Make sure your Figma access token includes at least{" "}
-          <strong>read access</strong> to Current user, File metadata, File
-          version and Folders.
+          <strong>read access</strong> to Current user, File content, File
+          metadata, File version and Folders.
         </p>
       </header>
 

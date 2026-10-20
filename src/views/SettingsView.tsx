@@ -7,17 +7,23 @@ import clsx from "clsx";
 import { useFigmaData } from "@/context/FigmaDataContext";
 import { Dialog as BaseDialog } from "@base-ui-components/react";
 import { Dialog } from "@/components/Dialog";
-import { use, useState } from "react";
+import { useState } from "react";
 import { Field } from "@/components/Field";
 import { useStoredData } from "@/context/StoredDataContext";
 import { fetchProject } from "@/utils/fetchProject";
 import { parseFolderId } from "@/utils/parseFolderId";
 import { fetchProfile } from "@/utils/fetchProfile";
 import { Callout } from "@/components/Callout";
+import { UpdateSection } from "@/components/UpdateSection";
 
 type SettingsViewProps =
   | { asDialog?: false; open?: never; onClose?: never; onFolderAdded?: never }
-  | { asDialog: true; open: boolean; onClose?: () => void; onFolderAdded?: (id: string) => void };
+  | {
+      asDialog: true;
+      open: boolean;
+      onClose?: () => void;
+      onFolderAdded?: (id: string) => void;
+    };
 
 export default function SettingsView({
   asDialog,
@@ -29,8 +35,14 @@ export default function SettingsView({
   const { currentUser } = useFigmaData();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newProjectId, setNewProjectId] = useState("");
-  const { storedProjects, clearData, storedAccessToken, saveProject, saveAccessToken, removeProject } =
-    useStoredData();
+  const {
+    storedProjects,
+    clearData,
+    storedAccessToken,
+    saveProject,
+    saveAccessToken,
+    removeProject,
+  } = useStoredData();
   const [error, setError] = useState<string | null>(null);
   const [isUpdateTokenDialogOpen, setIsUpdateTokenDialogOpen] = useState(false);
   const [newToken, setNewToken] = useState("");
@@ -73,7 +85,7 @@ export default function SettingsView({
       if (err) {
         console.log(err);
         setError(
-          "Folder doesn't exist with that ID or you don't have permission to view."
+          "Folder doesn't exist with that ID or you don't have permission to view.",
         );
       }
     }
@@ -122,13 +134,19 @@ export default function SettingsView({
                     return (
                       <li
                         key={project}
-                        className={clsx(styles.SectionListItem, styles.FolderItem)}
+                        className={clsx(
+                          styles.SectionListItem,
+                          styles.FolderItem,
+                        )}
                         onMouseEnter={() => setHoveredFolderId(id)}
                         onMouseLeave={() => setHoveredFolderId(null)}
                       >
                         <h3 className={styles.ItemLabel}>{name}</h3>
                         <button
-                          className={clsx(styles.DeleteButton, hoveredFolderId === id && styles.Visible)}
+                          className={clsx(
+                            styles.DeleteButton,
+                            hoveredFolderId === id && styles.Visible,
+                          )}
                           onClick={() => removeProject(id)}
                         >
                           <Trash2 size={14} />
@@ -161,7 +179,12 @@ export default function SettingsView({
                         access scopes.
                       </p>
                     </div>
-                    <Button fullWidth type="secondary" size="small" onClick={() => setIsUpdateTokenDialogOpen(true)}>
+                    <Button
+                      fullWidth
+                      type="secondary"
+                      size="small"
+                      onClick={() => setIsUpdateTokenDialogOpen(true)}
+                    >
                       Update token
                     </Button>
                   </li>
@@ -184,12 +207,23 @@ export default function SettingsView({
                   </li>
                 </ul>
               </div>
-              <footer className={styles.Footer}>
+              <UpdateSection />
+        <footer className={styles.Footer}>
+                <img
+                  src="/icon.png"
+                  className={styles.Logo}
+                  width={24}
+                  height="auto"
+                  alt="Arborista"
+                />
                 Made with love in Colombia by Santiago Moreno
               </footer>
               <Dialog
                 open={isUpdateTokenDialogOpen}
-                onClose={() => { setIsUpdateTokenDialogOpen(false); setTokenError(null); }}
+                onClose={() => {
+                  setIsUpdateTokenDialogOpen(false);
+                  setTokenError(null);
+                }}
                 title="Update access token"
               >
                 {tokenError && <Callout type="error" content={tokenError} />}
@@ -200,7 +234,12 @@ export default function SettingsView({
                   onChange={(value) => setNewToken(value)}
                   description="Only visible to you and stored locally"
                 />
-                <Button type="secondary" align="end" onClick={handleUpdateToken} disabled={isUpdatingToken}>
+                <Button
+                  type="secondary"
+                  align="end"
+                  onClick={handleUpdateToken}
+                  disabled={isUpdatingToken}
+                >
                   {isUpdatingToken ? "Updating..." : "Update token"}
                 </Button>
               </Dialog>
@@ -275,7 +314,10 @@ export default function SettingsView({
                   <h3 className={styles.ItemLabel}>{name}</h3>
                   <button
                     className={styles.DeleteButton}
-                    style={{ opacity: hoveredFolderId === id ? 1 : 0, pointerEvents: hoveredFolderId === id ? "auto" : "none" }}
+                    style={{
+                      opacity: hoveredFolderId === id ? 1 : 0,
+                      pointerEvents: hoveredFolderId === id ? "auto" : "none",
+                    }}
                     onClick={() => removeProject(id)}
                   >
                     <Trash2 size={14} />
@@ -306,7 +348,12 @@ export default function SettingsView({
                   access scopes.
                 </p>
               </div>
-              <Button fullWidth type="secondary" size="small" onClick={() => setIsUpdateTokenDialogOpen(true)}>
+              <Button
+                fullWidth
+                type="secondary"
+                size="small"
+                onClick={() => setIsUpdateTokenDialogOpen(true)}
+              >
                 Update token
               </Button>
             </li>
@@ -329,12 +376,23 @@ export default function SettingsView({
             </li>
           </ul>
         </div>
+        <UpdateSection />
         <footer className={styles.Footer}>
+          <img
+            src="/icon.png"
+            className={styles.Logo}
+            width={24}
+            height="auto"
+            alt="Arborista"
+          />
           Made with love in Colombia by Santiago Moreno
         </footer>
         <Dialog
           open={isUpdateTokenDialogOpen}
-          onClose={() => { setIsUpdateTokenDialogOpen(false); setTokenError(null); }}
+          onClose={() => {
+            setIsUpdateTokenDialogOpen(false);
+            setTokenError(null);
+          }}
           title="Update access token"
         >
           {tokenError && <Callout type="error" content={tokenError} />}
@@ -345,7 +403,12 @@ export default function SettingsView({
             onChange={(value) => setNewToken(value)}
             description="Only visible to you and stored locally"
           />
-          <Button type="secondary" align="end" onClick={handleUpdateToken} disabled={isUpdatingToken}>
+          <Button
+            type="secondary"
+            align="end"
+            onClick={handleUpdateToken}
+            disabled={isUpdatingToken}
+          >
             {isUpdatingToken ? "Updating..." : "Update token"}
           </Button>
         </Dialog>

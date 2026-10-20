@@ -1,6 +1,12 @@
 .TitleBar {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  -webkit-app-region: drag; /* works in addition to data-tauri-drag-region */
+  height: 3.5rem;
+  -webkit-app-region: drag;
+  z-index: 5;
+  pointer-events: none;
 }
 
 .Buttons {

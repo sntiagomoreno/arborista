@@ -27,8 +27,12 @@ export function GET(request) {
   img { width: 56px; height: 56px; margin-bottom: 8px; }
   h1 { font-size: 18px; font-weight: 500; margin: 0; }
   p { font-size: 14px; color: #9d9d9d; margin: 0; line-height: 1.5; }
-  a { margin-top: 12px; padding: 10px 18px; border-radius: 12px; background: #ecf6af; color: #1f1f1f;
-    font-weight: 500; font-size: 14px; text-decoration: none; }
+  a { margin-top: 12px; padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 8px;
+    background: #ecf6af; color: #1f1f1f; font-weight: 500; font-size: 1rem; text-decoration: none;
+    transition: background-color 150ms ease-out; }
+  a:hover { background: hsl(68, 80%, 88%); }
+  a:active { background: hsl(68, 80%, 95%); }
+  a:focus-visible { outline: 2px solid #9d9d9d; outline-offset: 2px; }
 </style>
 </head>
 <body>

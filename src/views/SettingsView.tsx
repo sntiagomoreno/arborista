@@ -15,6 +15,7 @@ import { parseFolderId } from "@/utils/parseFolderId";
 import { fetchProfile } from "@/utils/fetchProfile";
 import { Callout } from "@/components/Callout";
 import { UpdateSection } from "@/components/UpdateSection";
+import { signInWithFigma } from "@/utils/figmaAuth";
 
 type SettingsViewProps =
   | { asDialog?: false; open?: never; onClose?: never; onFolderAdded?: never }
@@ -39,10 +40,30 @@ export default function SettingsView({
     storedProjects,
     clearData,
     storedAccessToken,
+    authType,
     saveProject,
     saveAccessToken,
+    saveOAuthTokens,
     removeProject,
   } = useStoredData();
+  const isOAuth = authType === "oauth";
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [reconnectError, setReconnectError] = useState<string | null>(null);
+
+  async function handleReconnect() {
+    setReconnectError(null);
+    setIsReconnecting(true);
+    try {
+      await saveOAuthTokens(await signInWithFigma());
+    } catch (err) {
+      console.log(err);
+      if (!(err instanceof Error && err.message === "Sign-in cancelled")) {
+        setReconnectError("Sign-in didn't complete. Try again.");
+      }
+    } finally {
+      setIsReconnecting(false);
+    }
+  }
   const [error, setError] = useState<string | null>(null);
   const [isUpdateTokenDialogOpen, setIsUpdateTokenDialogOpen] = useState(false);
   const [newToken, setNewToken] = useState("");
@@ -173,26 +194,47 @@ export default function SettingsView({
                 <ul className={styles.SectionList}>
                   <li className={styles.SectionListItem}>
                     <div>
-                      <h3 className={styles.ItemLabel}>Update access token</h3>
+                      <h3 className={styles.ItemLabel}>
+                        {isOAuth
+                          ? "Reconnect Figma account"
+                          : "Update access token"}
+                      </h3>
                       <p className={styles.ItemDescription}>
-                        Update your token if is soon to expire or need to update
-                        access scopes.
+                        {isOAuth
+                          ? "Sign in again if Arborista lost access to your files."
+                          : "Update your token if is soon to expire or need to update access scopes."}
                       </p>
+                      {isOAuth && reconnectError && (
+                        <p className={styles.ItemError}>{reconnectError}</p>
+                      )}
                     </div>
                     <Button
                       fullWidth
                       type="secondary"
                       size="small"
-                      onClick={() => setIsUpdateTokenDialogOpen(true)}
+                      disabled={isReconnecting}
+                      onClick={() =>
+                        isOAuth
+                          ? handleReconnect()
+                          : setIsUpdateTokenDialogOpen(true)
+                      }
                     >
-                      Update token
+                      {isOAuth
+                        ? isReconnecting
+                          ? "Waiting for Figma…"
+                          : "Reconnect"
+                        : "Update token"}
                     </Button>
                   </li>
                   <li className={styles.SectionListItem}>
                     <div>
-                      <h3 className={styles.ItemLabel}>Clear access token</h3>
+                      <h3 className={styles.ItemLabel}>
+                        {isOAuth ? "Sign out" : "Clear access token"}
+                      </h3>
                       <p className={styles.ItemDescription}>
-                        Clearing your token will remove all your folders too.
+                        {isOAuth
+                          ? "Signing out removes your folders too."
+                          : "Clearing your token will remove all your folders too."}
                       </p>
                     </div>
                     <Button
@@ -202,13 +244,13 @@ export default function SettingsView({
                       size="small"
                       destructive
                     >
-                      Clear token
+                      {isOAuth ? "Sign out" : "Clear token"}
                     </Button>
                   </li>
                 </ul>
               </div>
               <UpdateSection />
-        <footer className={styles.Footer}>
+              <footer className={styles.Footer}>
                 <img
                   src="/icon.png"
                   className={styles.Logo}
@@ -342,26 +384,43 @@ export default function SettingsView({
           <ul className={styles.SectionList}>
             <li className={styles.SectionListItem}>
               <div>
-                <h3 className={styles.ItemLabel}>Update access token</h3>
+                <h3 className={styles.ItemLabel}>
+                  {isOAuth ? "Reconnect Figma account" : "Update access token"}
+                </h3>
                 <p className={styles.ItemDescription}>
-                  Update your token if is soon to expire or need to update
-                  access scopes.
+                  {isOAuth
+                    ? "Sign in again if Arborista lost access to your files."
+                    : "Update your token if is soon to expire or need to update access scopes."}
                 </p>
+                {isOAuth && reconnectError && (
+                  <p className={styles.ItemError}>{reconnectError}</p>
+                )}
               </div>
               <Button
                 fullWidth
                 type="secondary"
                 size="small"
-                onClick={() => setIsUpdateTokenDialogOpen(true)}
+                disabled={isReconnecting}
+                onClick={() =>
+                  isOAuth ? handleReconnect() : setIsUpdateTokenDialogOpen(true)
+                }
               >
-                Update token
+                {isOAuth
+                  ? isReconnecting
+                    ? "Waiting for Figma…"
+                    : "Reconnect"
+                  : "Update token"}
               </Button>
             </li>
             <li className={styles.SectionListItem}>
               <div>
-                <h3 className={styles.ItemLabel}>Clear access token</h3>
+                <h3 className={styles.ItemLabel}>
+                  {isOAuth ? "Sign out" : "Clear access token"}
+                </h3>
                 <p className={styles.ItemDescription}>
-                  Clearing your token will remove all your folders too.
+                  {isOAuth
+                    ? "Signing out removes your folders too."
+                    : "Clearing your token will remove all your folders too."}
                 </p>
               </div>
               <Button
@@ -371,7 +430,7 @@ export default function SettingsView({
                 size="small"
                 destructive
               >
-                Clear token
+                {isOAuth ? "Sign out" : "Clear token"}
               </Button>
             </li>
           </ul>

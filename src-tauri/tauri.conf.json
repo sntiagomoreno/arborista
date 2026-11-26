@@ -48,6 +48,13 @@
       "endpoints": [
         "https://github.com/sntiagomoreno/arborista/releases/latest/download/latest.json"
       ]
+    },
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "arborista"
+        ]
+      }
     }
   }
 }

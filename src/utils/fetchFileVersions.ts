@@ -1,4 +1,4 @@
-import { FIGMA_API_URL } from "./apiUrl";
+import { FIGMA_API_URL, figmaHeaders } from "./apiUrl";
 import type { GetFileVersionsResponse } from "@figma/rest-api-spec";
 
 function filterHumanVersions(
@@ -17,9 +17,7 @@ export async function fetchFileVersions(
   fileKey: string
 ): Promise<GetFileVersionsResponse> {
   const response = await fetch(`${FIGMA_API_URL}/files/${fileKey}/versions`, {
-    headers: {
-      "X-Figma-Token": accessToken,
-    },
+    headers: figmaHeaders(accessToken),
   });
 
   if (!response.ok) {

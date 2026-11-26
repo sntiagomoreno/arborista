@@ -1,13 +1,11 @@
-import { FIGMA_API_URL } from "./apiUrl";
+import { FIGMA_API_URL, figmaHeaders } from "./apiUrl";
 import type { GetMeResponse } from "@figma/rest-api-spec";
 
 export async function fetchProfile(
   accessToken: string
 ): Promise<GetMeResponse> {
   const response = await fetch(`${FIGMA_API_URL}/me`, {
-    headers: {
-      "X-Figma-Token": accessToken,
-    },
+    headers: figmaHeaders(accessToken),
   });
 
   if (!response.ok) {

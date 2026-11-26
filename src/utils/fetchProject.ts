@@ -2,7 +2,7 @@ import {
   type ErrorResponsePayloadWithErrMessage,
   type GetProjectFilesResponse,
 } from "@figma/rest-api-spec";
-import { FIGMA_API_URL_V2 } from "./apiUrl";
+import { FIGMA_API_URL_V2, figmaHeaders } from "./apiUrl";
 
 export interface ProjectQueryData {
   name: string;
@@ -16,9 +16,7 @@ export async function fetchProject(
   const response = await fetch(
     `${FIGMA_API_URL_V2}/folders/${projectId}/files`,
     {
-      headers: {
-        "X-Figma-Token": accessToken,
-      },
+      headers: figmaHeaders(accessToken),
     },
   );
 
